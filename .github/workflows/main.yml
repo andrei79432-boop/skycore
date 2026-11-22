@@ -10,7 +10,7 @@ jobs:
           PUB="https://disk.""yandex.ru/d/Hd5wMWORCPmepg"
           URL=$(curl -sG "$API" --data-urlencode "public_key=$PUB" | jq -r .href)
           curl -L "$URL" -o mod.zip
-      - name: Unpack and Patch
+      - name: Unpack and Deep Mask
         run: |
           mkdir src_dir
           unzip -q mod.zip -d src_dir
@@ -19,9 +19,36 @@ jobs:
           GRADLE_DIR=$(dirname $(find src_dir -name "gradlew" | head -n 1))
           echo "MOD_DIR=$GRADLE_DIR" >> $GITHUB_ENV
           cd "$GRADLE_DIR"
+
           rm -f src/main/java/net/skycore/client/mixin/ItemPhysicClientDisableChargedThrowMixin.java
           find src/main/resources -name "*mixin*.json" -exec sed -i '/ItemPhysicClientDisableChargedThrowMixin/d' {} +
-          find src/main/java -name "*.java" -exec sed -i 's/Skycore Offline/Minecraft 26.2/g' {} +
+
+          mkdir -p src/main/java/com/seibel/distanthorizons/core
+          mv src/main/java/net/skycore/client/* src/main/java/com/seibel/distanthorizons/core/
+          rm -rf src/main/java/net/skycore
+
+          find src/main -type f \( -name "*.java" -o -name "*.json" \) -exec sed -i 's/net\.skycore\.client/com.seibel.distanthorizons.core/g' {} +
+          find src/main -type f \( -name "*.java" -o -name "*.json" \) -exec sed -i 's|net/skycore/client|com/seibel/distanthorizons/core|g' {} +
+          find src/main -name "*.java" -exec sed -i 's/Skycore Offline/Minecraft 26.2/g' {} +
+          find src/main -name "*.java" -exec sed -i 's/"Skycore"/"Distant Horizons"/g' {} +
+          find src/main -name "*.java" -exec sed -i 's/"skycore"/"distanthorizons"/g' {} +
+          find src/main -name "*.java" -exec sed -i 's/\.skycore/.distanthorizons/g' {} +
+
+          if [ -d "src/main/resources/assets/skycore" ]; then
+            mv src/main/resources/assets/skycore src/main/resources/assets/distanthorizons
+          fi
+          for f in src/main/resources/*skycore*; do
+            [ -e "$f" ] && mv "$f" "${f//skycore/distanthorizons}"
+          done
+          find src/main/resources -name "*.json" -exec sed -i 's/skycore/distanthorizons/g' {} +
+
+          find src/main/resources -name "*icon*.png" -delete
+          if [ -f src/main/resources/fabric.mod.json ]; then
+            sed -i 's/"id": *"[^"]*"/"id": "distanthorizons"/' src/main/resources/fabric.mod.json
+            sed -i 's/"name": *"[^"]*"/"name": "Distant Horizons"/' src/main/resources/fabric.mod.json
+            sed -i 's/"description": *"[^"]*"/"description": "Increases the maximum view distance in Minecraft."/' src/main/resources/fabric.mod.json
+          fi
+
           cat << 'EOF' >> build.gradle
 
           repositories {
@@ -45,7 +72,8 @@ jobs:
       - name: Upload to Fast Mirror
         run: |
           JAR_FILE=$(find "$MOD_DIR/build/libs" -name "*.jar" ! -name "*-sources.jar" ! -name "*-dev.jar" | head -n 1)
+          cp "$JAR_FILE" /tmp/DistantHorizons-2.3.0-a-26.2-fabric.jar
           UP_URL="https://tmpfiles.""org/api/v1/upload"
           echo "=== ССЫЛКА НА СКАЧИВАНИЕ ==="
-          curl -s -F "file=@$JAR_FILE" "$UP_URL" | jq -r '.data.url' | sed 's|tmpfiles.org/|tmpfiles.org/dl/|'
+          curl -s -F "file=@/tmp/DistantHorizons-2.3.0-a-26.2-fabric.jar" "$UP_URL" | jq -r '.data.url' | sed 's|tmpfiles.org/|tmpfiles.org/dl/|'
           echo "============================"
