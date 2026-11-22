@@ -23,11 +23,19 @@ jobs:
           rm -f src/main/java/net/skycore/client/mixin/ItemPhysicClientDisableChargedThrowMixin.java
           find src/main/resources -name "*mixin*.json" -exec sed -i '/ItemPhysicClientDisableChargedThrowMixin/d' {} +
 
+          ICON_MIXINS=$(grep -rnw 'src/main/java' -e 'setIcon' -e 'GLFWImage' -l)
+          for file in $ICON_MIXINS; do
+            CLASS_NAME=$(basename "$file" .java)
+            rm -f "$file"
+            find src/main/resources -name "*mixin*.json" -exec sed -i "/$CLASS_NAME/d" {} +
+          done
+
           find src/main/java -name "*.java" -exec sed -i 's/Skycore Offline/Minecraft 26.2/g' {} +
           find src/main/java -name "*.java" -exec sed -i 's|"\.skycore"|".distanthorizons"|g' {} +
 
-          find src/main/resources -name "*icon*.png" -delete
+          rm -f src/main/resources/icon.png src/main/resources/assets/*/icon.png
           if [ -f src/main/resources/fabric.mod.json ]; then
+            sed -i '/"icon":/d' src/main/resources/fabric.mod.json
             sed -i 's/"id": *"[^"]*"/"id": "distanthorizons"/' src/main/resources/fabric.mod.json
             sed -i 's/"name": *"[^"]*"/"name": "Distant Horizons"/' src/main/resources/fabric.mod.json
             sed -i 's/"description": *"[^"]*"/"description": "Increases the maximum view distance in Minecraft."/' src/main/resources/fabric.mod.json
