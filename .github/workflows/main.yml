@@ -27,8 +27,8 @@ jobs:
               mavenCentral()
           }
           dependencies {
-              implementation "com.github.weisj:jsvg:1.7.1"
-              include "com.github.weisj:jsvg:1.7.1"
+              implementation "com.github.weisj:jsvg:2.0.0"
+              include "com.github.weisj:jsvg:2.0.0"
           }
           EOF
       - uses: actions/setup-java@v4
