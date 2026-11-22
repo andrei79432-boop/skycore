@@ -25,6 +25,7 @@ jobs:
       - name: Build Mod
         run: |
           cd "$MOD_DIR"
+          sed -i 's/\r$//' gradlew
           chmod +x gradlew
           ./gradlew build
       - uses: actions/upload-artifact@v4
