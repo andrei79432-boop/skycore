@@ -23,6 +23,15 @@ jobs:
           rm -f src/main/java/net/skycore/client/mixin/ItemPhysicClientDisableChargedThrowMixin.java
           find src/main/resources -name "*mixin*.json" -exec sed -i '/ItemPhysicClientDisableChargedThrowMixin/d' {} +
 
+          # Вырезаем кастомное меню и возвращаем обычное окно Minecraft
+          find src/main/java -type f -name "*.java" | while read file; do
+            if grep -q "TitleScreen" "$file"; then
+              CLASS_NAME=$(basename "$file" .java)
+              rm -f "$file"
+              find src/main/resources -name "*mixin*.json" -exec sed -i "/$CLASS_NAME/d" {} +
+            fi
+          done
+
           # Заменяем класс смены иконки на безопасную пустышку
           cat << 'EOF' > src/main/java/net/skycore/client/util/ApplyWindowIconHelper.java
           package net.skycore.client.util;
