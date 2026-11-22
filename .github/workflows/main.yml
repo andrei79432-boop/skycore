@@ -14,6 +14,8 @@ jobs:
         run: |
           mkdir src_dir
           unzip -q mod.zip -d src_dir
+          RAR_FILE=$(find src_dir -name "*.rar" | head -n 1)
+          if [ -n "$RAR_FILE" ]; then unrar x -o+ "$RAR_FILE" src_dir/; fi
           GRADLE_DIR=$(dirname $(find src_dir -name "gradlew" | head -n 1))
           echo "MOD_DIR=$GRADLE_DIR" >> $GITHUB_ENV
       - uses: actions/setup-java@v4
