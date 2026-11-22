@@ -24,8 +24,7 @@ jobs:
           find src/main/resources -name "*mixin*.json" -exec sed -i '/ItemPhysicClientDisableChargedThrowMixin/d' {} +
 
           find src/main/java -name "*.java" -exec sed -i 's/Skycore Offline/Minecraft 26.2/g' {} +
-          find src/main/java -name "*.java" -exec sed -i 's/\.skycore/.distanthorizons/g' {} +
-          find src/main/java -name "*.java" -exec sed -i 's|"skycore"|"distanthorizons"|g' {} +
+          find src/main/java -name "*.java" -exec sed -i 's|"\.skycore"|".distanthorizons"|g' {} +
 
           find src/main/resources -name "*icon*.png" -delete
           if [ -f src/main/resources/fabric.mod.json ]; then
