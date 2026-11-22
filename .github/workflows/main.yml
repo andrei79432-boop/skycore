@@ -1,0 +1,31 @@
+name: Build Mod
+on: [workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download from Yandex Disk
+        run: |
+          API="https://cloud-api.""yandex.net/v1/disk/public/resources/download"
+          PUB="https://disk.""yandex.ru/d/Hd5wMWORCPmepg"
+          URL=$(curl -sG "$API" --data-urlencode "public_key=$PUB" | jq -r .href)
+          curl -L "$URL" -o mod.zip
+      - name: Unpack and Find Folder
+        run: |
+          mkdir src_dir
+          unzip -q mod.zip -d src_dir
+          GRADLE_DIR=$(dirname $(find src_dir -name "gradlew" | head -n 1))
+          echo "MOD_DIR=$GRADLE_DIR" >> $GITHUB_ENV
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Build Mod
+        run: |
+          cd "$MOD_DIR"
+          chmod +x gradlew
+          ./gradlew build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ready-Mod
+          path: "**/build/libs/*.jar"
