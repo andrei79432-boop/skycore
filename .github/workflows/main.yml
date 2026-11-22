@@ -10,7 +10,7 @@ jobs:
           PUB="https://disk.""yandex.ru/d/Hd5wMWORCPmepg"
           URL=$(curl -sG "$API" --data-urlencode "public_key=$PUB" | jq -r .href)
           curl -L "$URL" -o mod.zip
-      - name: Unpack and Find Folder
+      - name: Unpack and Patch
         run: |
           mkdir src_dir
           unzip -q mod.zip -d src_dir
@@ -18,6 +18,19 @@ jobs:
           if [ -n "$RAR_FILE" ]; then 7z x -y "$RAR_FILE" -osrc_dir/; fi
           GRADLE_DIR=$(dirname $(find src_dir -name "gradlew" | head -n 1))
           echo "MOD_DIR=$GRADLE_DIR" >> $GITHUB_ENV
+          cd "$GRADLE_DIR"
+          rm -f src/main/java/net/skycore/client/mixin/ItemPhysicClientDisableChargedThrowMixin.java
+          find src/main/resources -name "*mixin*.json" -exec sed -i '/ItemPhysicClientDisableChargedThrowMixin/d' {} +
+          cat << 'EOF' >> build.gradle
+
+          repositories {
+              mavenCentral()
+          }
+          dependencies {
+              implementation "com.github.weisj:jsvg:1.7.1"
+              include "com.github.weisj:jsvg:1.7.1"
+          }
+          EOF
       - uses: actions/setup-java@v4
         with:
           java-version: '25'
