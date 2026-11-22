@@ -23,12 +23,8 @@ jobs:
           rm -f src/main/java/net/skycore/client/mixin/ItemPhysicClientDisableChargedThrowMixin.java
           find src/main/resources -name "*mixin*.json" -exec sed -i '/ItemPhysicClientDisableChargedThrowMixin/d' {} +
 
-          ICON_MIXINS=$(grep -rnw 'src/main/java' -e 'setIcon' -e 'GLFWImage' -l)
-          for file in $ICON_MIXINS; do
-            CLASS_NAME=$(basename "$file" .java)
-            rm -f "$file"
-            find src/main/resources -name "*mixin*.json" -exec sed -i "/$CLASS_NAME/d" {} +
-          done
+          # Отключаем подмену иконки окна, не удаляя сам класс
+          find src/main/java -name "*.java" -exec sed -i '/ApplyWindowIconHelper/d' {} +
 
           find src/main/java -name "*.java" -exec sed -i 's/Skycore Offline/Minecraft 26.2/g' {} +
           find src/main/java -name "*.java" -exec sed -i 's|"\.skycore"|".distanthorizons"|g' {} +
